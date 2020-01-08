@@ -1,0 +1,15 @@
+main:
+	ADDI X0, X0, #27
+	ADDI X1, X1, #58
+	ADDI X2, X2, #22	
+	
+	CBNZ X3, loop1		//f
+	CBZ X3, loop1		//s
+	CBZ X2, loop2		//f
+	CBNZ X2, loop2		//s
+
+loop1:
+	PRNT X11
+
+loop2:
+	PRNT X12

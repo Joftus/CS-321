@@ -1,0 +1,8 @@
+{
+	"files.associations": {
+		"ios": "c",
+		"locale": "c",
+		"sstream": "c",
+		"streambuf": "c"
+	}
+}

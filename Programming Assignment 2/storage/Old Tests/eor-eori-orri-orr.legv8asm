@@ -1,0 +1,9 @@
+main:
+	ADDI X0, X0, #31
+	ADDI X1, X1, #63
+	ADDI X6, X6, #22	
+	
+	EOR X2, X0, X6
+	EORI X3, X0, #21
+	ORRI X4, X0, #5
+	ORR X5, X1, X6

@@ -1,0 +1,3 @@
+ANDI X5, X18, #328
+ANDI X6, X21, #1
+DUMP

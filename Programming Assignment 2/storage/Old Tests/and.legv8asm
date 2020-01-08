@@ -1,0 +1,4 @@
+main:
+	ADDI X0, X0, #31
+	ADDI X1, X1, #63	
+	AND X2, X0, X1

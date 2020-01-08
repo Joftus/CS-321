@@ -1,0 +1,7 @@
+main:
+	ADDI X0, X0, #27
+	ADDI X1, X1, #58
+	ADDI X2, X2, #22	
+	
+	LDUR X3, [X2, #64]
+	PRNT X3

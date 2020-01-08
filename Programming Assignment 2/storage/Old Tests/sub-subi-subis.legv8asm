@@ -1,0 +1,11 @@
+main:
+	ADDI X0, X0, #31
+	ADDI X1, X1, #63	
+	
+	SUB X2, X0, X1
+	SUBI X3, X0, #21
+	SUBIS X4, X0, #4
+	B.LT loop
+
+loop:
+	PRNT X5

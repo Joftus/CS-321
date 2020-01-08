@@ -1,0 +1,90 @@
+This README file will focus more on the structure of the project rather than explaining it.
+This README explains each file in order the program will use it.
+Most, if not all the commented out lines are from testing. 
+
+main.c
+	toBinary()
+		- Used to switch each instruction from uint32_t to char* for my parse tree
+	stats()
+		- prints data that this assignment was focused on after all instructions have been run
+	main()
+		- init emu (the core struct that directs the emulator and tracks data for stat) (see structs.h for details)
+		- read in the file in "rb"
+		- loop for processing the file line by line from buffer var
+		- increment emu.line_num (keeps track of position in file) and emu.lines_run (used for "program" part of dump output)
+		- link to stats() when done with buffer
+
+parse.c
+	parse_cmd()
+		- here lies my gross parse tree, probably a more efficent way to do it...
+		- functionally it finds the proper method to call in cmd.c (named to reflect the instruction)
+			and then inputs the instruction line after parsing out the op code.
+	parse_rest()
+		- removes op code from the instruction line
+		- length of op code is reflected by the index at which the propper method from cmd.c was identified
+
+cmd.c
+	instruction_cmds()
+		- *This is a summation of all the methods that represent cmds (i.e. ADD, ADDI)*
+		- input from parse.c is sent to formats.c to the respective format type
+		- var out is returned in the form of the struct named after the instruction format type
+		- the Rd or Rn or ... is now parsed and the desired op is performed
+	dtoBinary()
+		- same method as toBinary() in main.c, just afraid to remove it and see what errors it causes
+	parse_cond()
+		- my implementation of conditional flags
+		- checks if the condition was set in the previous line like it should be
+		- checks if the input conditional from a CB-Format instruction is satisfied by the current cond_val stored in the emu
+	control_check()
+		- checks for bubbles from branch instructions
+		- increments the bubble tracker for both bypass and nobypass
+		- also increments control hazards
+	data_check()
+		- checks for bubbles from ALU or MEM instructions
+		- increments the bubble tracker for both bypass and nobypass
+		- also increments data hazards and unused data hazards (data hazards that create a bubble smaller another one)
+	logger()
+		- logs the two previous lines in emu and the registers used to be evaluated in control_check() and data_check()
+	original_line_builder()
+		- simply recreates the program before it was converted to a .machine file
+		- only used for "program" part of DUMP
+
+formats.c
+	toDecimal()
+		- converts binary versions of Rd or Rn or ... to decimal to be stored in the corresponding struct with "_d" appended to the var named
+	twosToDecimal()
+		- same as above but with an added precaution for two's compliment problems
+	format_R()
+		- uses struct Form_R from structs.h as the var type for "out"
+		- parses input to Rm, shamt, Rn and Rd then stores it in var labled out to be returned
+		- also stores different formats of the var's listed above (bin, decimal and length)
+	format_I()
+		- uses struct Form_I from structs.h as the var type for "out"
+		- parses input to ALU_immediate, Rn and Rd then stores them in out
+	format_D()
+		- uses struct Form_D from structs.h as the var type for "out"
+		- parses input to DT_address, op, Rn and Rt then stores them in out
+	format_B()
+		- uses struct Form_B from structs.h as the var type for "out"
+		- parses input to BR_address then stores it in out
+	format_CB()
+		- uses struct Form_CB from structs.h as the var type for "out"
+		- parses input to COND_BR_address and Rt then stores them in out
+
+structs.h
+	Form_*
+		- stores / organizes data parsed from input in bin and decimal, also tracks len of vars
+	EMU
+		- Main tracker / logger / driver of this program
+		- all data that needs to be used universally is stored here.
+		- Breakdown of complex variables
+			1. registers: array of 37 (32 used) registers with a few special cases.
+				- 28: stack pointer (always pointing to the top of the stack, reset after reading each instruction)
+				- 29: frame pointer (always pointing to some position in the stack)
+				- 31: XZR, always zero
+			2. exit_status: just used by HALT to trigger the ending of a program, checking in main.c main()
+			3. line_num: line of file currently being processed
+			4. cond_line_set: tracks when SUBS or SUBIS were last used to make sure stray cond flags don't impact
+				a miss placed B.Cond or CBZ or CBNZ
+			5. cond_val: this is my "S" that will be evaluated based on the cond in the next line
+			

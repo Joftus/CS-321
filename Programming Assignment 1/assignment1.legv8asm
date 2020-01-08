@@ -1,0 +1,147 @@
+// USED REGISTERS
+//X0 = counter / i
+//X1 = size
+//X2 = swap address 1
+//X3 = swap address 2
+//X4 = smallest address
+//X5 = smallest
+//X6 = sorted array length
+//X7 = iterative binary search result
+//X8 = recursive binary search result
+//X9 = binary search key
+//X10 = binary search comparison result
+//X11 = 
+//X12 = 
+//X13 = 
+//X14 = flex
+//X15 = flex
+//X16 = trash
+//X17 = flex
+//X18 = flex
+
+main:		
+	ADDI X1,XZR,#20		// size of array
+	ADDI X9,XZR,#8		// binary search key
+	BL fill
+	BL selectionSort
+
+
+
+fill:
+	
+	ADD X0,XZR,XZR		// i=0
+loop1:
+	LSL X18,X0,#3		// X18=i*8
+	SUB X15,X1,X0		// size-i
+	STUR X15,[X18,#0]	// array[i]=size-i
+	ADDI X0,X0,#1		// i++
+	SUBS X16,X0,X1		// CMP X9, X1 with trash reg X8
+	B.LT loop1			// if i < size loop
+	BR LR
+
+swap:
+	LDUR X18, [X2,#0]
+	LDUR X17, [X3,#0] 
+	STUR X17, [X2,#0]
+	STUR X18, [X3,#0]
+	BR LR
+
+
+
+smallest:
+	ADD X0,X6,XZR		// i=sorted array length
+	ADDI X5,XZR,#1000	// initalize min to a huge value
+loop2:
+	LSL X18,X0,#3
+	LDUR X17,[X18,#0]	// reg X17 (temp) = v[k]
+	SUBS X16,X17,X5
+	B.LT smaller
+	ADDI X0,X0,#1		// i++
+	SUBS X16,X0,X1
+	B.LT loop2
+	BR LR
+smaller:	
+	ADD X0,X6,XZR	
+	ADD X5,XZR,X17
+	ADD X4,X18,XZR
+	B loop2
+
+
+
+selectionSort:
+	SUBS X16,X6,X1
+	B.EQ binarySearchI
+loop3:
+	BL sort
+	SUBS X16,X6,X1
+	B.LE loop3
+	BR LR
+sort:
+	BL smallest
+	ADD X2,X4,XZR		// swap address 1 = smallest address
+	LSL X3,X6,#3		// sorted array length * 8 to get 1st unsorted position
+	BL swap			// swap 1st unsorted position and smallest 
+	ADDI X6,X6,#1		// sorted array length++
+	BL selectionSort	// continues till sorted array length = size
+	
+
+
+binarySearchI:
+	ADD X0,XZR,XZR		// start i = 0	
+	ADD X18,X1,XZR		// set size
+loop4:
+	ADD X17,XZR,X0		// store start
+	ADD X15,XZR,X18		// store end
+	BL middle
+	SUBS X16,X18,X9		// compare key and current middle
+	B.LT setLessThan
+	B.GT setGreaterThan
+	ADD X7,XZR,X18
+	B binarySearchR
+	
+setLessThan:
+	ADD X0,X18,XZR		// sets bottom to X18
+	ADD X18,X15,XZR		// sets top to prev top
+	B loop4
+	
+setGreaterThan:
+	ADD X0,X17,XZR		// sets bottom to prev bottom
+	B loop4
+
+middle:
+	ADDI X0,X0,#1
+	SUBI X18,X18,#1		// middle
+	SUBS X16,X0,X18
+	B.LT middle
+	BR LR
+
+
+
+binarySearchR:
+	ADD X0,XZR,XZR
+	ADD X18,X1,XZR
+loop5:
+	ADD X17,XZR,X0
+	ADD X15,XZR,X18
+	BL middle
+	SUBS X16,X18,X9
+	B.LT setLessThanR
+	B.GT setGreaterThanR
+	ADD X8,XZR,X18
+	B end
+
+setLessThanR:
+	ADD X0,X18,XZR
+	ADD X18,X15,XZR
+	B loop5
+	
+setGreaterThanR:
+	ADD X0,X17,XZR
+	B loop5
+
+
+
+end:	
+	SUB X0,X7,X8
+	DUMP
+
